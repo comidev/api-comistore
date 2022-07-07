@@ -5,7 +5,7 @@ export enum RoleName {
     ADMIN = "ADMIN",
 }
 export default {
-    save: async (roleName: RoleName) => {
+    findOrSave: async (roleName: RoleName) => {
         const role = { name: roleName };
         return (await repoModel.findOne(role)) || (await repoModel.create(role));
     },

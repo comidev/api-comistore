@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for typescript/src/components/user/service.ts</title>
+    <title>Code coverage report for typescript/src/components/product/product.repo.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../../../prettify.css" />
     <link rel="stylesheet" href="../../../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../../index.html">All files</a> / <a href="index.html">typescript/src/components/user</a> service.ts</h1>
+        <h1><a href="../../../../index.html">All files</a> / <a href="index.html">typescript/src/components/product</a> product.repo.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">81.25% </span>
-                <span class="quiet">Statements</span>
-                <span class='fraction'>13/16</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
-                <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
-                <span class="quiet">Functions</span>
-                <span class='fraction'>0/7</span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">77.77% </span>
+                <span class="strong">100% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>8/8</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>7/9</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
@@ -75,30 +75,54 @@
 <a name='L10'></a><a href='#L10'>10</a>
 <a name='L11'></a><a href='#L11'>11</a>
 <a name='L12'></a><a href='#L12'>12</a>
-<a name='L13'></a><a href='#L13'>13</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { userRepo } from "./model/mongodb";
-// import { roleRepo } from "../role/model/mongodb";
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { ProductReq } from "./dto";
+import productModel from "./model/mongodb";
 &nbsp;
-export const findAll = <span class="fstat-no" title="function not covered" >async () =</span>&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
-    const users = <span class="cstat-no" title="statement not covered" >await userRepo.find({}, { password: -1 });</span>
-<span class="cstat-no" title="statement not covered" >    return users;</span>
+export default {
+    findAllOrFields: async (filter: object = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> =&gt; {
+        const productsDB = await productModel.find(filter);
+        return productsDB;
+    },
+    findById: async (id: string) =&gt; {
+        const productDB = await productModel.findById(id);
+        return productDB;
+    },
+    update: async (id: string, product: ProductReq) =&gt; {
+        const productDB = await productModel.findByIdAndUpdate(id, product);
+        return productDB;
+    },
+    deleteById: async (id: string) =&gt; {
+        await productModel.findByIdAndRemove(id);
+    },
 };
-export const findById = <span class="fstat-no" title="function not covered" >() =</span>&gt; {};
-export const register = <span class="fstat-no" title="function not covered" >() =</span>&gt; {};
-export const login = <span class="fstat-no" title="function not covered" >() =</span>&gt; {};
-export const existsUsername = <span class="fstat-no" title="function not covered" >() =</span>&gt; {};
-export const updatePassword = <span class="fstat-no" title="function not covered" >() =</span>&gt; {};
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -106,7 +130,7 @@ export const updatePassword = <span class="fstat-no" title="function not covered
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at Tue Jul 05 2022 09:24:42 GMT-0500 (hora estándar de Perú)
+                at Wed Jul 06 2022 23:02:09 GMT-0500 (hora estándar de Perú)
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

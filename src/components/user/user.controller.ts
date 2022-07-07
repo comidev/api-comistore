@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { Controller, tryOrError } from "../../utils/controller";
 import { Tokens } from "../../utils/jwt";
-import { UpdatePassword, UserGet, UserReq } from "./dto";
+import { UpdatePassword, UserRes, UserReq } from "./dto";
 import {
     existsUsernameValid,
     saveUserValid,
@@ -12,14 +12,14 @@ import userService from "./user.service";
 const controller = Router();
 
 const findAll: Controller = async (_req, res) => {
-    const users: UserGet[] = await userService.findAll();
+    const users: UserRes[] = await userService.findAll();
     res.status(users.length === 0 ? 204 : 200);
     res.send(users);
 };
 
 const save: Controller = async (req, res) => {
     const userReq: UserReq = req.body;
-    const user: UserGet = await userService.saveAdmin(userReq);
+    const user: UserRes = await userService.saveAdmin(userReq);
     res.status(201);
     res.send(user);
 };

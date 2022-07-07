@@ -1,47 +1,47 @@
 import { HttpException, HttpStatus } from "../../midlewares/handleHttpException";
 import roleRepo, { RoleName } from "../role/role.repo";
-import { UpdatePassword, UserGet, UserReq, UserSave } from "./dto";
+import { UpdatePassword, UserRes, UserReq, UserDB } from "./dto";
 import { encrypt, compare } from "../../utils/password";
 import userRepo from "./user.repo";
 import { createTokens, isBearer, verify } from "../../utils/jwt";
 
-const save = async (user: UserReq, roleName: RoleName): Promise<UserGet> => {
-    const { _id: roleId } = await roleRepo.save(roleName);
+const adapterUserRes = (item: any): UserRes => {
+    const { username } = item;
+    return { username };
+};
 
+const save = async (user: UserReq, roleName: RoleName) => {
+    const { _id: roleId } = await roleRepo.findOrSave(roleName);
     const password: string = await encrypt(user.password);
 
-    const userSave: UserSave = {
+    const userNew: UserDB = {
         username: user.username,
         password,
         roles: [roleId],
     };
 
     try {
-        const userDB = await userRepo.save(userSave);
-        const userRes: UserGet = { username: userDB.username };
-        return userRes;
+        return await userRepo.save(userNew);
     } catch (e) {
-        const message = `El username ya existe ${userSave.username}`;
+        const message = `El username ya existe ${userNew.username}`;
         throw HttpException(HttpStatus.CONFLICT, message);
     }
 };
 
-export const saveClient = async (user: UserReq): Promise<UserGet> => {
-    return await save(user, RoleName.CLIENTE);
-};
-
 export default {
-    findAll: async (): Promise<UserGet[]> => {
+    findAll: async (): Promise<UserRes[]> => {
         const usersDB = await userRepo.findAll();
-        const users: UserGet[] = usersDB.map((item) => {
-            const username = item.username;
-            return { username };
-        });
-        return users;
+        return usersDB.map(adapterUserRes);
     },
 
-    saveAdmin: async (user: UserReq): Promise<UserGet> => {
-        return await save(user, RoleName.ADMIN);
+    saveAdmin: async (user: UserReq): Promise<UserRes> => {
+        const userDB = await save(user, RoleName.ADMIN);
+        return adapterUserRes(userDB);
+    },
+
+    saveClient: async (user: UserReq) => {
+        const userDB = await save(user, RoleName.CLIENTE);
+        return userDB;
     },
 
     existsUsername: async (username: string): Promise<boolean> => {
@@ -81,12 +81,7 @@ export default {
             throw HttpException(HttpStatus.UNAUTHORIZED, message);
         }
 
-        const roles: string[] = [];
-        for (const roleDB of userDB.roles) {
-            const role = await roleRepo.findById(roleDB);
-            const roleName = role?.name || "";
-            roles.push(roleName);
-        }
+        const roles: string[] = userDB.roles.map((item) => item.name);
 
         //TODO: Inicia sesión
         return createTokens({
@@ -125,5 +120,9 @@ export default {
         } catch (e) {
             return false;
         }
+    },
+
+    updateUsername: async (usernamePrev: string, usernameNext: string) => {
+        await userRepo.updateByUsername(usernamePrev, { username: usernameNext });
     },
 };

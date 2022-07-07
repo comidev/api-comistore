@@ -1,6 +1,7 @@
 import { model, Schema } from "mongoose";
+import { UserDB } from "../dto";
 
-const UserSchema = new Schema(
+const UserSchema = new Schema<UserDB>(
     {
         username: {
             type: String,
