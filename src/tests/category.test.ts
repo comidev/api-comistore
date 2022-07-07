@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import request from "supertest";
-import app, { server } from "../../app";
+import app, { server } from "../app";
 import { HttpStatus } from "../midlewares/handleHttpException";
 import { createCategory } from "./app-fabric";
 import categoryRepo from "../components/category/model/mongodb";

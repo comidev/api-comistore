@@ -1,6 +1,9 @@
 import { Router } from "express";
+import { handleRoles } from "../../midlewares/handleRoles";
+import { handleToken } from "../../midlewares/handleToken";
 import { Controller, tryOrError } from "../../utils/controller";
 import { Tokens } from "../../utils/jwt";
+import { RoleName } from "../role/role.repo";
 import { UpdatePassword, UserRes, UserReq } from "./dto";
 import {
     existsUsernameValid,
@@ -61,11 +64,34 @@ const tokenValidate: Controller = async (req, res) => {
 };
 
 controller.get("", tryOrError(findAll));
-controller.post("", saveUserValid, tryOrError(save));
+
+controller.post(
+    "",
+    handleToken,
+    handleRoles(RoleName.ADMIN),
+    saveUserValid,
+    tryOrError(save)
+);
+
 controller.post("/username", existsUsernameValid, tryOrError(existsUsername));
-controller.patch("/:id/password", updatePasswordValid, tryOrError(updatePassword));
+
+controller.patch(
+    "/:id/password",
+    handleToken,
+    handleRoles(RoleName.CLIENTE),
+    updatePasswordValid,
+    tryOrError(updatePassword)
+);
+
 controller.post("/login", saveUserValid, tryOrError(login));
-controller.post("/token/refresh", tryOrError(tokenRefresh));
+
+controller.post(
+    "/token/refresh",
+    handleToken,
+    handleRoles(RoleName.CLIENTE),
+    tryOrError(tokenRefresh)
+);
+
 controller.post("/token/validate", tryOrError(tokenValidate));
 
 export default { router: controller };

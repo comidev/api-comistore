@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const user_controller_1 = __importDefault(require("../components/user/user.controller"));
+const category_controller_1 = __importDefault(require("../components/category/category.controller"));
+const product_controller_1 = __importDefault(require("../components/product/product.controller"));
+const country_controller_1 = __importDefault(require("../components/country/country.controller"));
+const customer_controller_1 = __importDefault(require("../components/customer/customer.controller"));
+const invoice_controller_1 = __importDefault(require("../components/invoice/invoice.controller"));
+const router = (0, express_1.Router)();
+router.use("/users", user_controller_1.default.router);
+router.use("/categories", category_controller_1.default.router);
+router.use("/products", product_controller_1.default.router);
+router.use("/countries", country_controller_1.default.router);
+router.use("/customers", customer_controller_1.default.router);
+router.use("/invoices", invoice_controller_1.default.router);
+exports.default = router;

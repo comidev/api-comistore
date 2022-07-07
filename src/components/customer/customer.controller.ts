@@ -1,8 +1,15 @@
 import { Router } from "express";
+import { handleRoles } from "../../midlewares/handleRoles";
+import { handleToken } from "../../midlewares/handleToken";
 import { Controller, tryOrError } from "../../utils/controller";
+import { RoleName } from "../role/role.repo";
 import customerService from "./customer.service";
 import { CustomerReq, CustomerRes, CustomerUpdate } from "./dto";
-import { customerReqValid, customerUpdValid, existsEmailValid } from "./dto/validator";
+import {
+    customerReqValid,
+    customerUpdValid,
+    existsEmailValid,
+} from "./dto/validator";
 
 const router = Router();
 
@@ -59,11 +66,27 @@ const update: Controller = async (req, res) => {
     res.send(customerRes);
 };
 
-router.get("", tryOrError(findAll));
-router.get("/:id", tryOrError(findById));
+router.get("", handleToken, handleRoles(RoleName.ADMIN), tryOrError(findAll));
+
+router.get("/:id", handleToken, handleRoles(RoleName.CLIENTE), tryOrError(findById));
+
 router.post("", customerReqValid, tryOrError(save));
-router.delete("/:id", tryOrError(deleteById));
+
+router.delete(
+    "/:id",
+    handleToken,
+    handleRoles(RoleName.CLIENTE),
+    tryOrError(deleteById)
+);
+
 router.post("/email", existsEmailValid, tryOrError(existsEmail));
-router.put("/:id", customerUpdValid, tryOrError(update));
+
+router.put(
+    "/:id",
+    handleToken,
+    handleRoles(RoleName.CLIENTE),
+    customerUpdValid,
+    tryOrError(update)
+);
 
 export default { router };

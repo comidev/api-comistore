@@ -111,7 +111,7 @@ export default {
     tokenValidate: async (token: string) => {
         if (!token) {
             const message = "Debe enviar un token!";
-            throw HttpException(HttpStatus.BAD_REQUEST, message);
+            throw HttpException(HttpStatus.UNAUTHORIZED, message);
         }
 
         try {

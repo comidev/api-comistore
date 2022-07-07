@@ -3,10 +3,11 @@ import { Router } from "express";
 import { Controller, tryOrError } from "../../utils/controller";
 import { ProductReq, ProductRes } from "./dto";
 import { productReqValid } from "./dto/validator";
+import { handleToken } from "../../midlewares/handleToken";
+import { handleRoles } from "../../midlewares/handleRoles";
+import { RoleName } from "../role/role.repo";
 
 const router = Router();
-
-
 
 const findAllOrFields: Controller = async (req, res) => {
     const name: string = req.query.name?.toString() || "";
@@ -51,7 +52,18 @@ const deleteById: Controller = async (req, res) => {
 
 router.get("", tryOrError(findAllOrFields));
 router.get("/:id", tryOrError(findById));
-router.put("/:id", productReqValid, tryOrError(update));
-router.delete("/:id", tryOrError(deleteById));
+router.put(
+    "/:id",
+    handleToken,
+    handleRoles(RoleName.ADMIN),
+    productReqValid,
+    tryOrError(update)
+);
+router.delete(
+    "/:id",
+    handleToken,
+    handleRoles(RoleName.ADMIN),
+    tryOrError(deleteById)
+);
 
 export default { router };

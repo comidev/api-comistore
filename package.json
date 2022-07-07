@@ -2,10 +2,10 @@
     "name": "comistore-ts",
     "version": "1.0.0",
     "description": "",
-    "main": "app.js",
+    "main": "./src/app.ts",
     "scripts": {
-        "dev": "cross-env NODE_ENV=dev ts-node-dev app.ts",
-        "start": "cross-env NODE_ENV=prod node build/app.js",
+        "dev": "cross-env NODE_ENV=dev ts-node-dev src/app.ts",
+        "start": "cross-env NODE_ENV=prod node build/src/app.js",
         "test": "cross-env NODE_ENV=test jest --verbose",
         "test:watch": "npm run test -- --watchAll",
         "tsc": "tsc"

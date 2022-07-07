@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import app, { server } from "../../app";
+import app, { server } from "../app";
 import request from "supertest";
 import countryModel from "../components/country/model/mongodb";
 import { HttpStatus } from "../midlewares/handleHttpException";

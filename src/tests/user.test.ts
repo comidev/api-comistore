@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import request from "supertest";
-import app, { server } from "../../app";
+import app, { server } from "../app";
 import { HttpStatus } from "../midlewares/handleHttpException";
 import { createRole, createTokensByRoles, createUser } from "./app-fabric";
 import { isBearer, Payload, Tokens, verify } from "../utils/jwt";
@@ -34,41 +34,43 @@ describe("GET /users", () => {
 
 describe("POST /users", () => {
     test("BAD REQUEST, cuando no hay body", async () => {
-        const response = await API.post(`/users`).send();
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
+
+        const response = await API.post(`/users`).set(token).send();
 
         expect(response.status).toBe(HttpStatus.BAD_REQUEST);
     });
 
     test("BAD REQUEST, cuando hay error de validacion", async () => {
-        const userReq = {
-            username: "12",
-            password: "12",
-        };
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
+        const userReq = { username: "12", password: "12" };
 
-        const response = await API.post(`/users`).send(userReq);
+        const response = await API.post(`/users`).set(token).send(userReq);
 
         expect(response.status).toBe(HttpStatus.BAD_REQUEST);
     });
 
     test("CONFLICT, cuando el username ya existe", async () => {
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
         const { username } = await createUser();
         const userReq = {
             username,
             password: "123",
         };
 
-        const response = await API.post(`/users`).send(userReq);
+        const response = await API.post(`/users`).set(token).send(userReq);
 
         expect(response.status).toBe(HttpStatus.CONFLICT);
     });
 
     test("CREATED, cuando se registra correctamente", async () => {
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
         const userReq = {
             username: "strong_username",
             password: "strong_password",
         };
 
-        const response = await API.post(`/users`).send(userReq);
+        const response = await API.post(`/users`).set(token).send(userReq);
 
         expect(response.status).toBe(HttpStatus.CREATED);
     });
@@ -111,44 +113,60 @@ describe("POST, /users/username", () => {
 
 describe("PATCH, /users/:id/password", () => {
     test("BAD REQUEST, cuando no hay body", async () => {
-        const response = await API.patch(`/users/123/password`).send();
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
+
+        const response = await API.patch(`/users/1234567/password`)
+            .set(token)
+            .send();
 
         expect(response.status).toBe(HttpStatus.BAD_REQUEST);
     });
 
     test("BAD REQUEST, cuando hay error de validación", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         const body = {
             currentPassword: "cu",
             newPassword: "ne",
         };
 
-        const response = await API.patch(`/users/123/password`).send(body);
+        const response = await API.patch(`/users/123/password`)
+            .set(token)
+            .send(body);
 
         expect(response.status).toBe(HttpStatus.BAD_REQUEST);
     });
 
     test("NOT FOUND, cuando no existe el usuario", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         const body = { currentPassword: "123", newPassword: "123" };
 
-        const response = await API.patch(`/users/123/password`).send(body);
+        const response = await API.patch(`/users/123/password`)
+            .set(token)
+            .send(body);
 
         expect(response.status).toBe(HttpStatus.NOT_FOUND);
     });
 
     test("UNAUTHORIZED, cuando la contraseña no es correcta", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         const { _id: userId } = await createUser();
         const body = { currentPassword: "soyhacker", newPassword: "123" };
 
-        const response = await API.patch(`/users/${userId}/password`).send(body);
+        const response = await API.patch(`/users/${userId}/password`)
+            .set(token)
+            .send(body);
 
         expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
     });
 
     test("OK, cuando se actualiza la contraseña", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         const { _id: userId, password } = await createUser();
         const body = { currentPassword: password, newPassword: "new" };
 
-        const response = await API.patch(`/users/${userId}/password`).send(body);
+        const response = await API.patch(`/users/${userId}/password`)
+            .set(token)
+            .send(body);
 
         expect(response.status).toBe(HttpStatus.OK);
     });
@@ -218,10 +236,10 @@ describe("POST, /users/login", () => {
 });
 
 describe("POST, /users/token/refresh", () => {
-    test("BAD REQUEST, cuando el header.Authorization está vacío", async () => {
+    test("UNAUTHORIZED, cuando el header.Authorization está vacío", async () => {
         const response = await API.post("/users/token/refresh").send();
 
-        expect(response.status).toBe(HttpStatus.BAD_REQUEST);
+        expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
     });
     test("UNAUTHORIZED, cuando el token es incorrecto", async () => {
         const token = { Authorization: `Bearer xdxdd` };
@@ -233,7 +251,7 @@ describe("POST, /users/token/refresh", () => {
 
     test("OK, cuando el token es correcto y devuelve los tokens", async () => {
         const { userId, username, token } = await createTokensByRoles(
-            RoleName.ADMIN
+            RoleName.CLIENTE
         );
 
         const response = await API.post("/users/token/refresh").set(token).send();
@@ -252,16 +270,16 @@ describe("POST, /users/token/refresh", () => {
         expect(payload).toStrictEqual({
             id: userId.toJSON(),
             username,
-            roles: [RoleName.ADMIN.toString()],
+            roles: [RoleName.CLIENTE.toString()],
         });
     });
 });
 
 describe("POST, /users/token/validate", () => {
-    test("BAD REQUEST, cuando el header.Authorization está vacío", async () => {
+    test("UNAUTHORIZED, cuando el header.Authorization está vacío", async () => {
         const response = await API.post("/users/token/validate").send();
 
-        expect(response.status).toBe(HttpStatus.BAD_REQUEST);
+        expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
     });
 
     test("OK - false, cuando el token no es correcto", async () => {

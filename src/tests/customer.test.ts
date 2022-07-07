@@ -1,16 +1,22 @@
 import dotenv from "dotenv";
-import app, { server } from "../../app";
+import app, { server } from "../app";
 import request from "supertest";
 import { HttpStatus } from "../midlewares/handleHttpException";
 import mongoose from "mongoose";
 import customerModel from "../components/customer/model/mongodb";
 import userModel from "../components/user/model/mongodb";
-import { createCountry, createCustomer, createUser } from "./app-fabric";
+import {
+    createCountry,
+    createCustomer,
+    createTokensByRoles,
+    createUser,
+} from "./app-fabric";
 import {
     CustomerReq,
     CustomerRes,
     CustomerUpdate,
 } from "../components/customer/dto";
+import { RoleName } from "../components/role/role.repo";
 
 dotenv.config();
 const API = request(app);
@@ -43,15 +49,18 @@ beforeEach(async () => await customerModel.deleteMany({}));
 
 describe("GET, /customers", () => {
     test("NO CONTENT, cuando no hay clientes", async () => {
-        const response = await API.get("/customers").send();
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
+
+        const response = await API.get("/customers").set(token).send();
 
         expect(response.status).toBe(HttpStatus.NO_CONTENT);
     });
 
     test("OK, cuando hay al menos un cliente", async () => {
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
         const customerReal = await createCustomerReal();
 
-        const response = await API.get("/customers").send();
+        const response = await API.get("/customers").set(token).send();
 
         expect(response.status).toBe(HttpStatus.OK);
         expect(response.body).toStrictEqual([customerReal]);
@@ -60,14 +69,19 @@ describe("GET, /customers", () => {
 
 describe("GET, /customers/:id", () => {
     test("NOT FOUND, cuando el id no es correcto", async () => {
-        const response = await API.get(`/customers/123`).send();
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
+
+        const response = await API.get(`/customers/123`).set(token).send();
 
         expect(response.status).toBe(HttpStatus.NOT_FOUND);
     });
     test("OK, cuando el id es correcto", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         const customerReal = await createCustomerReal();
 
-        const response = await API.get(`/customers/${customerReal.id}`).send();
+        const response = await API.get(`/customers/${customerReal.id}`)
+            .set(token)
+            .send();
 
         expect(response.status).toBe(HttpStatus.OK);
         expect(response.body).toStrictEqual(customerReal);
@@ -176,15 +190,18 @@ describe("POST, /customers", () => {
 
 describe("DELETE, /customers/:id", () => {
     test("NOT FOUND, cuando el id no es correcto", async () => {
-        const response = await API.delete(`/customers/123`).send();
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
+
+        const response = await API.delete(`/customers/123`).set(token).send();
 
         expect(response.status).toBe(HttpStatus.NOT_FOUND);
     });
     test("OK, cuando el id es correcto", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         const { _id } = await createCustomer();
         const id = _id.toJSON();
 
-        const response = await API.delete(`/customers/${id}`).send();
+        const response = await API.delete(`/customers/${id}`).set(token).send();
 
         expect(response.status).toBe(HttpStatus.OK);
     });
@@ -221,14 +238,16 @@ describe("POST, /customers/email", () => {
 
 describe("PUT, /customers/:id", () => {
     test("BAD REQUEST, cuando el body está vacío", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         const body = {};
 
-        const response = await API.put(`/customers/123`).send(body);
+        const response = await API.put(`/customers/123`).set(token).send(body);
 
         expect(response.status).toBe(HttpStatus.BAD_REQUEST);
     });
 
     test("BAD REQUEST, cuando hay error de validación", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         const body: CustomerUpdate = {
             name: "",
             email: "omar.miranda@gmail.com",
@@ -239,12 +258,13 @@ describe("PUT, /customers/:id", () => {
             country: "Perú",
         };
 
-        const response = await API.put(`/customers/123`).send(body);
+        const response = await API.put(`/customers/123`).set(token).send(body);
 
         expect(response.status).toBe(HttpStatus.BAD_REQUEST);
     });
 
     test("NOT FOUND, cuando el ID es incorrecto", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         const body: CustomerUpdate = {
             name: "Omar Miranda",
             email: "omar.miranda@gmail.com",
@@ -255,12 +275,13 @@ describe("PUT, /customers/:id", () => {
             country: "Perú",
         };
 
-        const response = await API.put(`/customers/123`).send(body);
+        const response = await API.put(`/customers/123`).set(token).send(body);
 
         expect(response.status).toBe(HttpStatus.NOT_FOUND);
     });
 
     test("CONFLICT, cuando el nuevo email ya existe", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         const { email } = await createCustomer();
         const { _id: customerId } = await createCustomer();
         const body: CustomerUpdate = {
@@ -273,12 +294,15 @@ describe("PUT, /customers/:id", () => {
             country: "Perú",
         };
 
-        const response = await API.put(`/customers/${customerId}`).send(body);
+        const response = await API.put(`/customers/${customerId}`)
+            .set(token)
+            .send(body);
 
         expect(response.status).toBe(HttpStatus.CONFLICT);
     });
 
     test("CONFLICT, cuando el nuevo username ya existe", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         const [{ username }, { _id: customerId }] = await Promise.all([
             createUser(),
             (async () => {
@@ -297,12 +321,15 @@ describe("PUT, /customers/:id", () => {
             country: "Perú",
         };
 
-        const response = await API.put(`/customers/${customerId}`).send(body);
+        const response = await API.put(`/customers/${customerId}`)
+            .set(token)
+            .send(body);
 
         expect(response.status).toBe(HttpStatus.CONFLICT);
     });
 
     test("OK, cuando se actualiza correctamente", async () => {
+        const { token } = await createTokensByRoles(RoleName.CLIENTE);
         await userModel.deleteMany({});
         const [{ _id: userId }, { _id: countryId }] = await Promise.all([
             createUser(),
@@ -319,7 +346,9 @@ describe("PUT, /customers/:id", () => {
             country: "Perú",
         };
 
-        const response = await API.put(`/customers/${customerId}`).send(body);
+        const response = await API.put(`/customers/${customerId}`)
+            .set(token)
+            .send(body);
 
         expect(response.status).toBe(HttpStatus.OK);
         expect(response.body.id).toBeDefined();

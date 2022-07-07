@@ -3,7 +3,7 @@ import { Types } from "mongoose";
 export interface UserDB {
     username: string;
     password: string;
-    roles: [Types.ObjectId];
+    roles: Types.ObjectId[];
 }
 
 export type UserRes = Pick<UserDB, "username">;

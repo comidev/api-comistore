@@ -8,8 +8,10 @@ import userModel from "../components/user/model/mongodb";
 import categoryModel from "../components/category/model/mongodb";
 import productModel from "../components/product/model/mongodb";
 import countryModel from "../components/country/model/mongodb";
-import customerModel from "../components/customer/model/mongodb";
 import { Gender } from "../components/customer/customer.service";
+import customerModel from "../components/customer/model/mongodb";
+import invoiceItemModel from "../components/invoice-item/model/mongodb";
+import invoiceModel from "../components/invoice/model/mongodb";
 
 const Id = () => new Types.ObjectId();
 
@@ -94,4 +96,26 @@ export const createCustomer = async (
         country: countryId,
     };
     return await customerModel.create(customer);
+};
+
+export const createInvoiceItem = async (
+    { productId = Id() } = { productId: Id() }
+) => {
+    const invoiceItem = { quantity: 3, product: productId };
+    return await invoiceItemModel.create(invoiceItem);
+};
+
+export const createInvoice = async (
+    { customerId = Id(), invoiceItemId = Id() } = {
+        customerId: Id(),
+        invoiceItemId: Id(),
+    }
+) => {
+    const invoice = {
+        description: "Descripcion",
+        total: 100,
+        customer: customerId,
+        invoiceItems: [invoiceItemId],
+    };
+    return await invoiceModel.create(invoice);
 };

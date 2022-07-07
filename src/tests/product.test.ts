@@ -1,10 +1,11 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import request from "supertest";
-import app, { server } from "../../app";
+import app, { server } from "../app";
 import { HttpStatus } from "../midlewares/handleHttpException";
 import productModel from "../components/product/model/mongodb";
-import { createCategory, createProduct } from "./app-fabric";
+import { createCategory, createProduct, createTokensByRoles } from "./app-fabric";
+import { RoleName } from "../components/role/role.repo";
 
 dotenv.config();
 const API = request(app);
@@ -142,14 +143,16 @@ describe("GET, /products/:id", () => {
 
 describe("PUT, /products/:id", () => {
     test("BAD REQUEST, cuando el body está vacío", async () => {
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
         const body = {};
 
-        const response = await API.put(`/products/123`).send(body);
+        const response = await API.put(`/products/123`).set(token).send(body);
 
         expect(response.status).toBe(HttpStatus.BAD_REQUEST);
     });
 
     test("BAD REQUEST, cuando hay un error de validación", async () => {
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
         const body = {
             name: "Producto actualizado",
             description: "Nueva descripcion",
@@ -158,12 +161,13 @@ describe("PUT, /products/:id", () => {
             photoUrl: "soy una imagen",
         };
 
-        const response = await API.put(`/products/123`).send(body);
+        const response = await API.put(`/products/123`).set(token).send(body);
 
         expect(response.status).toBe(HttpStatus.BAD_REQUEST);
     });
 
     test("NOT FOUND, cuando el id es incorrecto o no existe", async () => {
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
         const body = {
             name: "Producto actualizado",
             description: "Nueva descripcion",
@@ -172,12 +176,13 @@ describe("PUT, /products/:id", () => {
             photoUrl: "soy una imagen",
         };
 
-        const response = await API.put(`/products/123`).send(body);
+        const response = await API.put(`/products/123`).set(token).send(body);
 
         expect(response.status).toBe(HttpStatus.NOT_FOUND);
     });
 
     test("OK, cuando se encuentra el producto", async () => {
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
         const { _id: id } = await createProduct();
         const body = {
             name: "Producto actualizado",
@@ -187,7 +192,7 @@ describe("PUT, /products/:id", () => {
             photoUrl: "soy una imagen",
         };
 
-        const response = await API.put(`/products/${id}`).send(body);
+        const response = await API.put(`/products/${id}`).set(token).send(body);
 
         expect(response.status).toBe(HttpStatus.OK);
         expect(response.body).toStrictEqual({ ...body, id: id.toJSON() });
@@ -196,16 +201,19 @@ describe("PUT, /products/:id", () => {
 
 describe("DELETE, /products/:id", () => {
     test("NOT FOUND, cuando el producto no existe", async () => {
-        const response = await API.delete(`/products/123`).send();
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
+
+        const response = await API.delete(`/products/123`).set(token).send();
 
         expect(response.status).toBe(HttpStatus.NOT_FOUND);
     });
 
     test("OK, cuando el producto es 'eliminado'", async () => {
+        const { token } = await createTokensByRoles(RoleName.ADMIN);
         const { _id } = await createProduct();
         const id = _id.toJSON();
 
-        const response = await API.delete(`/products/${id}`).send();
+        const response = await API.delete(`/products/${id}`).set(token).send();
 
         expect(response.status).toBe(HttpStatus.OK);
     });

@@ -6,7 +6,7 @@ export default {
         const productsDB = await productModel.find(filter);
         return productsDB;
     },
-    findById: async (id: string) => {
+    findById: async (id: any) => {
         const productDB = await productModel.findById(id);
         return productDB;
     },
@@ -16,5 +16,8 @@ export default {
     },
     deleteById: async (id: string) => {
         await productModel.findByIdAndRemove(id);
+    },
+    updateStock: async (id: any, stock: number) => {
+        await productModel.findByIdAndUpdate(id, { stock });
     },
 };

@@ -11,7 +11,7 @@ export default {
         return customersDB;
     },
 
-    findById: async (id: string) => {
+    findById: async (id: any) => {
         const customerDB = await customerModel
             .findById(id)
             .populate<{ user: UserDB; country: CountryDB }>(["user", "country"]);

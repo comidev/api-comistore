@@ -6,7 +6,7 @@ export interface ProductDB {
     photoUrl: string;
     stock: number;
     price: number;
-    categories: [Types.ObjectId];
+    categories: Types.ObjectId[];
 }
 
 export type ProductReq = Omit<ProductDB, "categories">;
