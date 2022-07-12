@@ -1,0 +1,6 @@
+node_modules
+npm-dubug.log
+src
+.gitignore
+tsconfig.json
+types.d.ts

@@ -14,7 +14,7 @@ const mongodb_1 = require("./config/mongodb");
 //TODO: Carga el .ENV
 (0, dotenv_1.config)();
 const app = (0, express_1.default)();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 //TODO: Acepta peticiones de dónde sea
 app.use((0, cors_1.default)());
 //TODO: Habilita el body

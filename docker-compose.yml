@@ -1,0 +1,19 @@
+version: "1"
+services:
+    comistore:
+        build: .
+        ports:
+            - "3000:3000"
+        links:
+            - mongodev
+    mongodev:
+        image: mongo:4.2.21-bionic
+        ports:
+            - "27017:27017"
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=comidev
+            - MONGO_INITDB_ROOT_PASSWORD=comidev
+        volumes:
+            - mongo-data:/data/db
+volumes:
+    mongo-data:
